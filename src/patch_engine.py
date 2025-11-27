@@ -56,17 +56,18 @@ class PatchEngine:
             idx = line_number - 1
             original_line = lines[idx]
 
-            if error_type == "IndexError":
-                # ... (existing heuristics) ...
-                if "range" in original_line and ("+ 1" in original_line or "len(" in original_line):
-                     return code.replace(original_line, original_line.replace("+ 1", "").replace("len(", "len(")), "Heuristic: Range Fix"
-                
-                indent = original_line[:len(original_line) - len(original_line.lstrip())]
-                patch = f"{indent}try:\n{indent}    {original_line.strip()}\n{indent}except IndexError:\n{indent}    pass"
-                lines[idx] = patch
-                return '\n'.join(lines), "Heuristic: Try-Except Wrap"
+            # Commented out: Try-except heuristic is not ideal for IndexError
+            # Let Ollama provide the proper fix instead
+            # if error_type == "IndexError":
+            #     if "range" in original_line and ("+ 1" in original_line or "len(" in original_line):
+            #          return code.replace(original_line, original_line.replace("+ 1", "").replace("len(", "len(")), "Heuristic: Range Fix"
+            #     
+            #     indent = original_line[:len(original_line) - len(original_line.lstrip())]
+            #     patch = f"{indent}try:\n{indent}    {original_line.strip()}\n{indent}except IndexError:\n{indent}    pass"
+            #     lines[idx] = patch
+            #     return '\n'.join(lines), "Heuristic: Try-Except Wrap"
 
-            elif error_type == "RecursionError":
+            if error_type == "RecursionError":
                 if "sys.setrecursionlimit" not in code:
                     return "import sys\nsys.setrecursionlimit(5000)\n" + code, "Heuristic: Increase Recursion Limit"
                 pass

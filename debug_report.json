@@ -1,0 +1,23 @@
+{
+    "timestamp": "2025-11-27 23:24:09",
+    "original_code": "def get_user_data(user_id):\n    database = {\n        1: \"Alice\",\n        2: \"Bob\"\n    }\n    return database[user_id]\n\nif __name__ == \"__main__\":\n    user = get_user_data(3)\n    print(f\"User found: {user}\")\n",
+    "repaired_code": "def get_user_data(user_id):\n    database = {\n        1: \"Alice\",\n        2: \"Bob\"\n    }\n    return database.get(user_id, \"User not found\")\n\nif __name__ == \"__main__\":\n    user = get_user_data(3)\n    print(f\"User found: {user}\")",
+    "traces": [
+        {
+            "iteration": 1,
+            "error_detected": "KeyError: 3",
+            "reasoning": "Ollama (qwen2.5-coder:7b)",
+            "raw_patch": "def get_user_data(user_id):\n    database = {\n        1: \"Alice\",\n        2: \"Bob\"\n    }\n    return database.get(user_id, \"User not found\")\n\nif __name__ == \"__main__\":\n    user = get_user_data(3)\n    print(f\"User found: {user}\")",
+            "success": false
+        },
+        {
+            "iteration": 2,
+            "error_detected": "None",
+            "reasoning": "Code ran successfully",
+            "raw_patch": "None",
+            "success": true
+        }
+    ],
+    "best_attempt": "def get_user_data(user_id):\n    database = {\n        1: \"Alice\",\n        2: \"Bob\"\n    }\n    return database.get(user_id, \"User not found\")\n\nif __name__ == \"__main__\":\n    user = get_user_data(3)\n    print(f\"User found: {user}\")",
+    "failure_explanation": "Success"
+}
