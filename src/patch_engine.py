@@ -104,35 +104,161 @@ Instructions:
 2. Ensure the fix prevents the crash/timeout.
 3. Return ONLY the full fixed code in a Python code block.
 """
+        url = "http://localhost:11434/api/generate"
+        payload = {
+            "model": self.model,
+            "prompt": prompt,
+            "stream": False
+        }
         try:
-            response = requests.post(
-                "http://localhost:11434/api/generate",
-                json={
-                    "model": self.model,
-                    "prompt": prompt,
-                    "stream": False
-                },
-                timeout=30
-            )
+            response = requests.post(url, json=payload, timeout=30)
             response.raise_for_status()
-            result = response.json()
-            response_text = result.get("response", "")
+            response_json = response.json()
             
-            # Extract code block
-            match = re.search(r"```python\n(.*?)```", response_text, re.DOTALL)
+            # Extract the code block from the response
+            full_response = response_json.get('response', '')
+            match = re.search(r"```python\n(.*?)```", full_response, re.DOTALL)
             if match:
                 return match.group(1).strip()
-            
-            # Fallback if no code block found, maybe the whole response is code?
-            # But usually models chat. Let's try to find any code block.
-            match = re.search(r"```\n(.*?)```", response_text, re.DOTALL)
-            if match:
-                return match.group(1).strip()
+            else:
+                # Fallback: if no code block, maybe the whole response is code?
+                # But usually models chat. Let's return None if strict parsing fails.
+                return None
                 
-            return None
-            
         except Exception as e:
-            print(f"Ollama API call failed: {e}")
+            print(f"Error calling Ollama: {e}")
+            return None
+
+    def get_logic_repair_prompt(self, code: str, user_description: str) -> Optional[str]:
+        """
+        Generates a logic repair for code that runs but produces wrong output.
+        Uses user description to guide the fix.
+        """
+        prompt = f"""
+You are a Python debugging assistant. The code runs successfully (exit code 0), but the user reports a logic error.
+
+User Description: {user_description}
+
+Code:
+```python
+{code}
+```
+
+Instructions:
+1. Analyze the logic error based on the user's description.
+2. Fix the logic to satisfy the user's requirement.
+3. Preserve all functional code structure.
+4. Return ONLY the full fixed code in a Python code block.
+"""
+        url = "http://localhost:11434/api/generate"
+        payload = {
+            "model": self.model,
+            "prompt": prompt,
+            "stream": False
+        }
+        
+        try:
+            response = requests.post(url, json=payload, timeout=30)
+            response.raise_for_status()
+            response_json = response.json()
+            
+            # Extract the code block from the response
+            full_response = response_json.get('response', '')
+            match = re.search(r"```python\n(.*?)```", full_response, re.DOTALL)
+            if match:
+                return match.group(1).strip()
+            else:
+                return None
+                
+        except Exception as e:
+            print(f"Error calling Ollama for logic repair: {e}")
+            return None
+
+    def verify_optimization(self, original_code: str, optimized_code: str, sandbox) -> Tuple[bool, str]:
+        """
+        Verifies that the optimized code produces the exact same stdout as the original code.
+        Returns (success, reason).
+        """
+        print("Verifying optimization consistency...")
+        
+        # Run original
+        orig_result = sandbox.run(original_code)
+        if orig_result.return_code != 0:
+            return False, f"Original code failed during verification: {orig_result.stderr}"
+            
+        # Run optimized
+        opt_result = sandbox.run(optimized_code)
+        if opt_result.return_code != 0:
+            return False, f"Optimized code failed execution: {opt_result.stderr}"
+            
+        # Compare stdout
+        if orig_result.stdout != opt_result.stdout:
+            return False, "Output mismatch: Optimized code produced different stdout."
+            
+        return True, "Verification successful."
+
+    def optimize_code(self, code: str) -> Optional[dict]:
+        """
+        Analyzes and optimizes the code. Returns a dict with:
+        - optimized_code
+        - original_complexity
+        - optimized_complexity
+        - changes_summary (list)
+        """
+        prompt = f"""
+TASK: **CODE OPTIMIZATION AND DOCUMENTATION**
+ROLE: You are a Senior Python Architect specializing in performance and code quality.
+GOAL: Optimize the provided Python code for efficiency (Time/Memory), readability, and compliance with PEP 8 standards.
+
+CONSTRAINTS:
+1.  **CRITICAL LOGIC:** The functional behavior and console output must remain EXACTLY the same.
+2.  **Optimization:** Focus on improving algorithmic complexity (e.g., O(N^2) -> O(N)).
+3.  **Documentation:** Add a descriptive **docstring** (Google style) to every function.
+4.  **EDUCATIONAL COMMENTING:** Add comments starting with `## EDUCATIONAL:` specifically explaining the Big O complexity change (e.g., `# ## EDUCATIONAL: Replaced list loop (O(n)) with set lookup (O(1)) for speed.`).
+5.  **Output Format:** Return the response in the specified JSON format below.
+
+Code:
+```python
+{code}
+```
+
+Return your response in this EXACT JSON format (no markdown around the JSON):
+{{
+    "original_complexity": "Estimated Big O",
+    "optimized_complexity": "Estimated Big O",
+    "changes_summary": ["Change 1", "Change 2"],
+    "optimized_code": "FULL PYTHON CODE HERE"
+}}
+"""
+        url = "http://localhost:11434/api/generate"
+        payload = {
+            "model": self.model,
+            "prompt": prompt,
+            "stream": False,
+            "format": "json"
+        }
+        
+        try:
+            print(f"Running optimization pass with {self.model}...")
+            response = requests.post(url, json=payload, timeout=60)
+            response.raise_for_status()
+            response_json = response.json()
+            full_response = response_json.get('response', '')
+            
+            # Parse JSON from response
+            try:
+                data = json.loads(full_response)
+                return data
+            except json.JSONDecodeError:
+                # Try to find JSON block
+                match = re.search(r"\{.*\}", full_response, re.DOTALL)
+                if match:
+                    return json.loads(match.group(0))
+                print("Failed to parse JSON from optimization response.")
+                return None
+                
+        except Exception as e:
+            print(f"Error during optimization: {e}")
             return None
 
     def apply_patch(self, code: str, patch: str) -> str:

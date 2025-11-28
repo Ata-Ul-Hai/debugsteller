@@ -1,23 +1,26 @@
 {
-    "timestamp": "2025-11-27 23:24:09",
-    "original_code": "def get_user_data(user_id):\n    database = {\n        1: \"Alice\",\n        2: \"Bob\"\n    }\n    return database[user_id]\n\nif __name__ == \"__main__\":\n    user = get_user_data(3)\n    print(f\"User found: {user}\")\n",
-    "repaired_code": "def get_user_data(user_id):\n    database = {\n        1: \"Alice\",\n        2: \"Bob\"\n    }\n    return database.get(user_id, \"User not found\")\n\nif __name__ == \"__main__\":\n    user = get_user_data(3)\n    print(f\"User found: {user}\")",
+    "original_code": "class Node:\n    def __init__(self, val):\n        self.val = val\n        self.left = None\n        self.right = None\n\ndef preorder(root, res):\n    if not root:\n        return\n    \n    preorder(root.left, res)\n    res.append(root.val)\n    preorder(root.right, res)\n\nroot = Node(1)\nroot.left = Node(2)\nroot.right = Node(3)\n\nres = []\npreorder(root, res)\nprint(res)\n",
+    "repaired_code": "class Node:\n    def __init__(self, val):\n        self.val = val\n        self.left = None\n        self.right = None\n\ndef preorder(root, res):\n    if not root:\n        return\n    \n    res.append(root.val)\n    preorder(root.left, res)\n    preorder(root.right, res)\n\nroot = Node(1)\nroot.left = Node(2)\nroot.right = Node(3)\n\nres = []\npreorder(root, res)\nprint(res)",
     "traces": [
         {
             "iteration": 1,
-            "error_detected": "KeyError: 3",
-            "reasoning": "Ollama (qwen2.5-coder:7b)",
-            "raw_patch": "def get_user_data(user_id):\n    database = {\n        1: \"Alice\",\n        2: \"Bob\"\n    }\n    return database.get(user_id, \"User not found\")\n\nif __name__ == \"__main__\":\n    user = get_user_data(3)\n    print(f\"User found: {user}\")",
-            "success": false
+            "error_type": "None",
+            "strategy": "Code ran successfully",
+            "patch": "None",
+            "success": true,
+            "status": "Attempted"
         },
         {
-            "iteration": 2,
-            "error_detected": "None",
-            "reasoning": "Code ran successfully",
-            "raw_patch": "None",
-            "success": true
+            "iteration": 4,
+            "error_type": "Logic Repair",
+            "strategy": "LLM Logic Repair: [1,2,3]",
+            "patch": "class Node:\n    def __init__(self, val):\n        self.val = val\n        self.left = None\n        self.right = None\n\ndef preorder(root, res):\n    if not root:\n        return\n    \n    res.append(root.val)\n    preorder(root.left, res)\n    preorder(root.right, res)\n\nroot = Node(1)\nroot.left = Node(2)\nroot.right = Node(3)\n\nres = []\npreorder(root, res)\nprint(res)",
+            "success": true,
+            "status": "Accepted"
         }
     ],
-    "best_attempt": "def get_user_data(user_id):\n    database = {\n        1: \"Alice\",\n        2: \"Bob\"\n    }\n    return database.get(user_id, \"User not found\")\n\nif __name__ == \"__main__\":\n    user = get_user_data(3)\n    print(f\"User found: {user}\")",
-    "failure_explanation": "Success"
+    "best_attempt": "class Node:\n    def __init__(self, val):\n        self.val = val\n        self.left = None\n        self.right = None\n\ndef preorder(root, res):\n    if not root:\n        return\n    \n    preorder(root.left, res)\n    res.append(root.val)\n    preorder(root.right, res)\n\nroot = Node(1)\nroot.left = Node(2)\nroot.right = Node(3)\n\nres = []\npreorder(root, res)\nprint(res)\n",
+    "failure_explanation": "Success",
+    "optimization_report": null,
+    "timestamp": "2025-11-28 06:23:48"
 }

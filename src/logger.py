@@ -14,41 +14,46 @@ class RepairTrace:
 class DebugLogger:
     def __init__(self, log_file: str = "debug_report.json"):
         self.log_file = log_file
-        self.original_code: str = ""
-        self.repaired_code: str = ""
-        self.traces: List[RepairTrace] = []
-        self.best_attempt: str = ""
-        self.failure_explanation: str = ""
+        self.report = {
+            "original_code": "",
+            "repaired_code": "",
+            "traces": [],
+            "best_attempt": "",
+            "failure_explanation": "",
+            "optimization_report": None
+        }
 
     def log_original_code(self, code: str):
-        self.original_code = code
+        self.report["original_code"] = code
 
     def log_repaired_code(self, code: str):
-        self.repaired_code = code
+        self.report["repaired_code"] = code
 
-    def add_trace(self, iteration: int, error: str, reasoning: str, patch: str, success: bool):
-        trace = RepairTrace(
-            iteration=iteration,
-            error_detected=error,
-            reasoning=reasoning,
-            raw_patch=patch,
-            success=success
-        )
-        self.traces.append(trace)
+    def log_optimization(self, original_complexity: str, optimized_complexity: str, changes: list, optimized_code: str):
+        self.report["optimization_report"] = {
+            "original_complexity": original_complexity,
+            "optimized_complexity": optimized_complexity,
+            "changes_summary": changes,
+            "optimized_code": optimized_code
+        }
+
+    def add_trace(self, iteration: int, error_type: str, strategy: str, patch: str, success: bool, status: str = "Attempted"):
+        trace = {
+            "iteration": iteration,
+            "error_type": error_type,
+            "strategy": strategy,
+            "patch": patch,
+            "success": success,
+            "status": status
+        }
+        self.report["traces"].append(trace)
 
     def set_best_attempt(self, code: str, explanation: str):
-        self.best_attempt = code
-        self.failure_explanation = explanation
+        self.report["best_attempt"] = code
+        self.report["failure_explanation"] = explanation
 
     def save(self):
-        data = {
-            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
-            "original_code": self.original_code,
-            "repaired_code": self.repaired_code,
-            "traces": [asdict(t) for t in self.traces],
-            "best_attempt": self.best_attempt,
-            "failure_explanation": self.failure_explanation
-        }
+        self.report["timestamp"] = time.strftime("%Y-%m-%d %H:%M:%S")
         with open(self.log_file, "w") as f:
-            json.dump(data, f, indent=4)
+            json.dump(self.report, f, indent=4)
         print(f"Debug report saved to {self.log_file}")

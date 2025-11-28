@@ -1,5 +1,5 @@
 def calculate_total(price, tax):
-    # Convert 'price' to float before adding with 'tax'
+    # Convert 'price' to float and add it with 'tax'
     return float(price) + tax
 
 if __name__ == "__main__":

@@ -1,10 +1,11 @@
 def calculate_average(numbers):
     total = 0
-    count = len(numbers)  # Correctly set count to the length of the numbers list
+    count = 0
     for num in numbers:
         total += num
-    # Correctly divide by the actual count instead of a hardcoded number
-    return total / count
+        count += 1  # Fix: Increment the count to avoid division by zero
+    
+    return total / count  # Corrected: Divide by the actual count instead of a hardcoded number
 
 if __name__ == "__main__":
     scores = [10, 20, 30, 40, 50]
@@ -12,7 +13,6 @@ if __name__ == "__main__":
     
     expected = 30.0
     if result != expected:
-        # We manually raise an error so Antigravity has something to catch
         raise ValueError(f"Logic Error! Expected {expected}, but got {result}")
     
     print("Success!")
