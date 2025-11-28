@@ -1,9 +1,17 @@
 {
-    "original_code": "class Node:\n    def __init__(self, val):\n        self.val = val\n        self.left = None\n        self.right = None\n\ndef preorder(root, res):\n    if not root:\n        return\n    \n    preorder(root.left, res)\n    res.append(root.val)\n    preorder(root.right, res)\n\nroot = Node(1)\nroot.left = Node(2)\nroot.right = Node(3)\n\nres = []\npreorder(root, res)\nprint(res)\n",
-    "repaired_code": "class Node:\n    def __init__(self, val):\n        self.val = val\n        self.left = None\n        self.right = None\n\ndef preorder(root, res):\n    if not root:\n        return\n    \n    res.append(root.val)\n    preorder(root.left, res)\n    preorder(root.right, res)\n\nroot = Node(1)\nroot.left = Node(2)\nroot.right = Node(3)\n\nres = []\npreorder(root, res)\nprint(res)",
+    "original_code": "def fib(n, memo={}):\n    if n <= 1:\n        return n\n\n    if n in memo:\n        return memo[0]   # BUG: wrong key returned\n\n    memo[n] = fib(n-1, memo) + fib(n-2, memo)\n    return memo[n]\n\nprint(fib(10))\n",
+    "repaired_code": "def fib(n, memo={}):\n    \"\"\"\n    Calculates the nth Fibonacci number using memoization.\n\n    Args:\n        n (int): The position in the Fibonacci sequence.\n        memo (dict, optional): A dictionary to store previously computed values. Defaults to an empty dictionary.\n\n    Returns:\n        int: The nth Fibonacci number.\n    \"\"\"\n    if n <= 1:\n        return n\n\n    if n not in memo:\n        memo[n] = fib(n-1, memo) + fib(n-2, memo)\n\n    return memo[n]\n\nprint(fib(10))",
     "traces": [
         {
             "iteration": 1,
+            "error_type": "KeyError: 0",
+            "strategy": "Ollama (qwen2.5-coder:7b)",
+            "patch": "def fib(n, memo={}):\n    if n <= 1:\n        return n\n\n    if n in memo:\n        return memo[n]   # Fix: return the correct value from memo dictionary\n\n    memo[n] = fib(n-1, memo) + fib(n-2, memo)\n    return memo[n]\n\nprint(fib(10))",
+            "success": false,
+            "status": "Attempted"
+        },
+        {
+            "iteration": 2,
             "error_type": "None",
             "strategy": "Code ran successfully",
             "patch": "None",
@@ -12,15 +20,22 @@
         },
         {
             "iteration": 4,
-            "error_type": "Logic Repair",
-            "strategy": "LLM Logic Repair: output should be [1,2,3]",
-            "patch": "class Node:\n    def __init__(self, val):\n        self.val = val\n        self.left = None\n        self.right = None\n\ndef preorder(root, res):\n    if not root:\n        return\n    \n    res.append(root.val)\n    preorder(root.left, res)\n    preorder(root.right, res)\n\nroot = Node(1)\nroot.left = Node(2)\nroot.right = Node(3)\n\nres = []\npreorder(root, res)\nprint(res)",
+            "error_type": "Optimization",
+            "strategy": "LLM Optimization",
+            "patch": "def fib(n, memo={}):\n    \"\"\"\n    Calculates the nth Fibonacci number using memoization.\n\n    Args:\n        n (int): The position in the Fibonacci sequence.\n        memo (dict, optional): A dictionary to store previously computed values. Defaults to an empty dictionary.\n\n    Returns:\n        int: The nth Fibonacci number.\n    \"\"\"\n    if n <= 1:\n        return n\n\n    if n not in memo:\n        memo[n] = fib(n-1, memo) + fib(n-2, memo)\n\n    return memo[n]\n\nprint(fib(10))",
             "success": true,
             "status": "Accepted"
         }
     ],
-    "best_attempt": "class Node:\n    def __init__(self, val):\n        self.val = val\n        self.left = None\n        self.right = None\n\ndef preorder(root, res):\n    if not root:\n        return\n    \n    preorder(root.left, res)\n    res.append(root.val)\n    preorder(root.right, res)\n\nroot = Node(1)\nroot.left = Node(2)\nroot.right = Node(3)\n\nres = []\npreorder(root, res)\nprint(res)\n",
+    "best_attempt": "def fib(n, memo={}):\n    if n <= 1:\n        return n\n\n    if n in memo:\n        return memo[n]   # Fix: return the correct value from memo dictionary\n\n    memo[n] = fib(n-1, memo) + fib(n-2, memo)\n    return memo[n]\n\nprint(fib(10))",
     "failure_explanation": "Success",
-    "optimization_report": null,
-    "timestamp": "2025-11-28 06:33:57"
+    "optimization_report": {
+        "original_complexity": "O(2^n)",
+        "optimized_complexity": "O(n)",
+        "changes_summary": [
+            "Replaced recursive calls with memoization to store intermediate results, reducing duplicate calculations."
+        ],
+        "optimized_code": "def fib(n, memo={}):\n    \"\"\"\n    Calculates the nth Fibonacci number using memoization.\n\n    Args:\n        n (int): The position in the Fibonacci sequence.\n        memo (dict, optional): A dictionary to store previously computed values. Defaults to an empty dictionary.\n\n    Returns:\n        int: The nth Fibonacci number.\n    \"\"\"\n    if n <= 1:\n        return n\n\n    if n not in memo:\n        memo[n] = fib(n-1, memo) + fib(n-2, memo)\n\n    return memo[n]\n\nprint(fib(10))"
+    },
+    "timestamp": "2025-11-28 08:12:58"
 }

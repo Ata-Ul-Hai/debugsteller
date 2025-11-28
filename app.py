@@ -6,7 +6,7 @@ from pypdf import PdfReader
 
 # --- Page Config ---
 st.set_page_config(
-    page_title="DebugSteller",
+    page_title="DebugStellar",
     page_icon="",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -73,6 +73,28 @@ st.markdown("""
     .css-15zrgzn {display: none;}
     .css-10trblm {display: none;}
     a.anchor-link {display: none;}
+    
+    /* LeetCode-style Column Separation */
+    [data-testid="column"] {
+        background-color: #1e1e1e;
+        border: 1px solid #333;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Reset style for nested columns (e.g., inside tabs) to avoid double-boxing */
+    [data-testid="column"] [data-testid="column"] {
+        background-color: transparent;
+        border: none;
+        padding: 0;
+        box-shadow: none;
+    }
+
+    /* Global Background */
+    .stApp {
+        background-color: #0e0e0e;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -120,15 +142,15 @@ def load_report():
     return None
 
 # --- Header ---
-st.markdown('<h1 class="gradient-text">DebugSteller</h1>', unsafe_allow_html=True)
-st.markdown("### AI-Powered Autonomous Debugging & Optimization Engine")
+st.markdown('<h1 class="gradient-text">DebugStellar</h1>', unsafe_allow_html=True)
+# st.markdown("### AI-Powered Autonomous Debugging & Optimization Engine")
 st.markdown("---")
 
 left_col, right_col = st.columns([1, 1], gap="large")
 
 # --- Left Column: Input ---
 with left_col:
-    st.subheader("Input Zone")
+    st.subheader("Input")
     
     input_method = st.radio("Source", ["Paste Code", "Upload File"], horizontal=True, label_visibility="collapsed")
     
@@ -161,7 +183,6 @@ with left_col:
         label_visibility="collapsed"
     )
     
-    st.markdown("###") # Spacer
     run_btn = st.button("Run Debugger", type="primary")
     
     # Handle button click
@@ -173,7 +194,7 @@ with left_col:
 
 # --- Right Column: Output ---
 with right_col:
-    st.subheader("Output Zone")
+    st.subheader("Output ")
     
     # Only show results if execution was done in this session
     if st.session_state.execution_done:
@@ -291,7 +312,7 @@ with right_col:
                                     for change in changes:
                                         st.markdown(f"- {change}")
                     else:
-                        st.success("🚀 Refactoring & Logic Repair Complete")
+                        st.success("Refactoring & Logic Repair Complete")
                         st.markdown("Code improvements and bug fixes were applied successfully.")
 
                     st.markdown("### Final Code")
@@ -314,7 +335,7 @@ with right_col:
             fixed_code = report.get("repaired_code", "")
             if fixed_code:
                 st.download_button(
-                    label="⬇️ Download Fixed Code",
+                    label="Download Fixed Code",
                     data=fixed_code,
                     file_name="fixed_code.py",
                     mime="text/x-python"
@@ -324,11 +345,11 @@ with right_col:
             
     else:
         # Welcome State (before first run)
-        st.markdown("### 👈 Ready to Debug?")
+        st.markdown("### Ready to Debug?")
         st.markdown("---")
         
         st.markdown("""
-        **How to use DebugSteller:**
+        **How to use DebugStellar:**
         
         1. **Paste or upload** your Python code on the left
         2. **Describe the bug** (optional) - e.g., "Output should be [1,2,3]"
@@ -340,7 +361,7 @@ with right_col:
         st.info("💡 **Waiting for input...** The system will analyze your code for bugs and performance issues.")
         
         st.markdown("---")
-        st.markdown("**What DebugSteller does:**")
+        st.markdown("**What DebugStellar does:**")
         
         col1, col2, col3 = st.columns(3)
         with col1:
