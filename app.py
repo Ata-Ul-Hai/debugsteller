@@ -180,7 +180,7 @@ with right_col:
         report = load_report()
         
         if report:
-            tab1, tab2, tab3 = st.tabs(["Code Diff", "Analysis & Insights", "Raw Trace"])
+            tab1, tab2, tab3, tab4 = st.tabs(["Code Diff", "Console Output", "Analysis & Insights", "Raw Trace"])
             
             with tab1:
                 st.caption("Original vs. Fixed Code")
@@ -193,6 +193,36 @@ with right_col:
                     st.code(report.get("repaired_code", ""), language="python")
             
             with tab2:
+                st.caption("Program Output")
+                
+                # Try to get stdout from the repaired code by running it
+                repaired_code = report.get("repaired_code", "")
+                if repaired_code:
+                    try:
+                        # Run the fixed code to capture its output
+                        result = subprocess.run(
+                            ["python3", "-c", repaired_code],
+                            capture_output=True,
+                            text=True,
+                            timeout=2
+                        )
+                        
+                        if result.stdout:
+                            st.code(result.stdout, language="text")
+                        else:
+                            st.info("No console output produced.")
+                            
+                        if result.stderr:
+                            st.error("**Error:**")
+                            st.code(result.stderr, language="text")
+                    except subprocess.TimeoutExpired:
+                        st.warning("Output capture timed out (code may have infinite loop).")
+                    except Exception as e:
+                        st.info("Could not capture console output.")
+                else:
+                    st.info("No console output produced.")
+            
+            with tab3:
                 st.caption("Optimization & Educational Notes")
                 
                 traces = report.get("traces", [])
@@ -267,7 +297,7 @@ with right_col:
                     st.markdown("### Final Code")
                     st.code(repaired_code, language="python")
 
-            with tab3:
+            with tab4:
                 st.caption("Execution Trace")
                 traces = report.get("traces", [])
                 for trace in traces:
